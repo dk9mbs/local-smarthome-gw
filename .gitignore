@@ -1,4 +1,5 @@
 config.py
+config.py.save
 snapshot.json
 tinytuya.json
 tuya-raw.json

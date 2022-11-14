@@ -6,13 +6,23 @@ from config import CONFIG
 
 app = Flask(__name__)
 
+class DeviceRoutingNotFound(Exception):
+    pass
+
+class DeviceNotFound(Exception):
+    pass
+
+class DeviceAttributeKeyNotFound(Exception):
+    pass
+
 #print(tinytuya.deviceScan())
 
-@app.route("/<device_alias>/<id>/<value>", methods=['POST','GET'])
-def send_command(device_alias, id, value):
+@app.route("/<device_alias>/<attribute>/<value>", methods=['POST','GET'])
+def send_command(device_alias, attribute, value):
     client=__create_client()
 
     rs=__retrive_device(client, device_alias)
+    device_attribute_key=__get_device_attribute_key(client, attribute, rs['class_id'])
 
     if rs!=None and (rs['vendor_id']).upper()=='TUYA' and (rs['class_id']).upper()=='BULB':
         d = tinytuya.BulbDevice(rs['id'], rs['address'], rs['local_key'], dev_type='default')
@@ -22,8 +32,19 @@ def send_command(device_alias, id, value):
         if value=='on':
             key_value=True
 
-        d.set_value(id,key_value)
+        d.set_value(device_attribute_key,key_value)
 
+    elif rs!=None and (rs['vendor_id']).upper()=='TUYA' and (rs['class_id']).upper()=='OUTLET':
+        d = tinytuya.OutletDevice(rs['id'], rs['address'], rs['local_key'], dev_type='default')
+        d.set_version(float(rs['version']))
+
+        key_value=False
+        if value=='on':
+            key_value=True
+        print(device_attribute_key)
+        d.set_value(device_attribute_key,key_value)
+    else:
+        print("No device found")
 
     __logoff_client(client)
 
@@ -31,21 +52,25 @@ def send_command(device_alias, id, value):
 
 
 def __retrive_device(client, device_alias):
-    fetch=f"""
-    <restapi type="select">
-        <table name="iot_device"/>
-        <comment text="from smarthome.py"/>
-        <filter type="OR">
-            <condition field="alias" value="{device_alias}" operator="="/>
-        </filter>
-    </restapi>
-    """
-    rs=client.read_multible("iot_device", fetch, json_out=True, none_if_eof=True)
-    if rs!=None:
-        return rs[0]
-    else:
-        return None
+    rs=client.read_multible("iot_device_routing", {"internal_device_id": f"{device_alias}" }, json_out=True, none_if_eof=True)
+    if rs == None:
+        raise DeviceRoutingNotFound(f"{device_alias}")
 
+    rs=client.read_multible("iot_device", {"id": f"{rs[0]['external_device_id']}"}, json_out=True, none_if_eof=True)
+
+    if rs==None:
+        raise DeviceNotFound(f"{rs[0]['external_device_id']}")
+
+    return rs[0]
+
+
+def __get_device_attribute_key(client, attribute, class_id):
+    rs=client.read_multible("iot_device_attribute",{"name":f"{attribute}", "class_id": f"{class_id}"}, json_out=True, none_if_eof=True)
+
+    if rs==None:
+        raise DeviceAttributeKeyNotFound(f"attribute:{attribute} class_id:{class_id}")
+
+    return rs[0]['device_attribute_key']
 
 def __create_client():
     client=RestApiClient(root_url=CONFIG['default']['restapi']['url'])

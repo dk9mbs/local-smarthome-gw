@@ -41,7 +41,6 @@ def main():
             json_data={
                 "id": devices[key]['id'],
                 "name": "*** new ***",
-                "alias": devices[key]['id'],
                 "product_id": devices[key]['productKey'],
                 "address": devices[key]['ip'],
                 "local_key": "*",
