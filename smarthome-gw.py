@@ -1,10 +1,15 @@
 #!/usr/bin/python3
-from flask import Flask
+from flask import Flask, abort
 import tinytuya
 from clientlib import RestApiClient
 from config import CONFIG
+from core.log import create_logger
 
 app = Flask(__name__)
+
+tinytuya.set_debug(False)
+
+logger=create_logger(__name__)
 
 class DeviceRoutingNotFound(Exception):
     pass
@@ -15,40 +20,47 @@ class DeviceNotFound(Exception):
 class DeviceAttributeKeyNotFound(Exception):
     pass
 
-#print(tinytuya.deviceScan())
+@app.route("/<external_device_id>/<attribute>/<value>", methods=['POST','GET'])
+def send_command(external_device_id, attribute, value):
+    try:
+        client=__create_client()
 
-@app.route("/<device_alias>/<attribute>/<value>", methods=['POST','GET'])
-def send_command(device_alias, attribute, value):
-    client=__create_client()
+        rs=__retrive_device(client, external_device_id)
+        device_attribute_key=__get_device_attribute_key(client, attribute, rs['class_id'])
 
-    rs=__retrive_device(client, device_alias)
-    device_attribute_key=__get_device_attribute_key(client, attribute, rs['class_id'])
+        if rs!=None and (rs['vendor_id']).upper()=='TUYA' and (rs['class_id']).upper()=='BULB':
+            d = tinytuya.BulbDevice(rs['id'], rs['address'], rs['local_key'], dev_type='default')
+            d.set_version(float(rs['version']))
 
-    if rs!=None and (rs['vendor_id']).upper()=='TUYA' and (rs['class_id']).upper()=='BULB':
-        d = tinytuya.BulbDevice(rs['id'], rs['address'], rs['local_key'], dev_type='default')
-        d.set_version(float(rs['version']))
+            key_value=False
+            if value=='on':
+                key_value=True
 
-        key_value=False
-        if value=='on':
-            key_value=True
+            d.set_value(device_attribute_key,key_value)
 
-        d.set_value(device_attribute_key,key_value)
+        elif rs!=None and (rs['vendor_id']).upper()=='TUYA' and (rs['class_id']).upper()=='OUTLET':
+            d = tinytuya.OutletDevice(rs['id'], rs['address'], rs['local_key'], dev_type='default')
+            d.set_version(float(rs['version']))
 
-    elif rs!=None and (rs['vendor_id']).upper()=='TUYA' and (rs['class_id']).upper()=='OUTLET':
-        d = tinytuya.OutletDevice(rs['id'], rs['address'], rs['local_key'], dev_type='default')
-        d.set_version(float(rs['version']))
+            key_value=False
+            if value=='on':
+                key_value=True
+            print(device_attribute_key)
+            d.set_value(device_attribute_key,key_value)
 
-        key_value=False
-        if value=='on':
-            key_value=True
-        print(device_attribute_key)
-        d.set_value(device_attribute_key,key_value)
-    else:
-        print("No device found")
+        else:
+            print("No device found")
 
-    __logoff_client(client)
+        __logoff_client(client)
 
-    return f"OK"
+        return f"OK"
+
+    except (DeviceRoutingNotFound,DeviceNotFound,DeviceAttributeKeyNotFound) as err:
+        logger.exception(f"{err}")
+        abort(404,f"{err}")
+    except exception as err:
+        logger.exception(f"{err}")
+        abort(500,f"{err}")
 
 
 def __retrive_device(client, device_alias):
@@ -80,9 +92,27 @@ def __create_client():
 def __logoff_client(client):
     client.logoff()
 
+
+@app.before_first_request
+def start_monitor():
+    from threading import Thread
+    from plugins.tuya_device_monitor import TuyaDeviceMonitor
+
+    def run_job():
+        client=RestApiClient(root_url=CONFIG['default']['restapi']['url'])
+        client.login(CONFIG['default']['restapi']['user'],CONFIG['default']['restapi']['password'])
+
+        tuya=TuyaDeviceMonitor()
+        tuya.execute(client)
+
+
+    print("run")
+    t = Thread(target=run_job)
+    t.setDaemon(True)
+    t.start()
+    print("running")
+
+
 if __name__ == '__main__':
-    #logger.info(f"Port.......: {AppInfo.get_server_port()}")
-    #logger.info(f"Host.......: {AppInfo.get_server_host()}")
-    #logger.info(f"Pluginroot.: {AppInfo.get_plugin_root()}")
     app.run(debug=True, host='127.0.0.1', port=5001)
 
