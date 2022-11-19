@@ -97,20 +97,31 @@ def __logoff_client(client):
 def start_monitor():
     from threading import Thread
     from plugins.tuya_device_monitor import TuyaDeviceMonitor
+    from plugins.tuya_device_scanner import TuyaDeviceScanner
 
-    def run_job():
+    def run_monitor():
         client=RestApiClient(root_url=CONFIG['default']['restapi']['url'])
         client.login(CONFIG['default']['restapi']['user'],CONFIG['default']['restapi']['password'])
 
-        tuya=TuyaDeviceMonitor()
-        tuya.execute(client)
+        tuya_mon=TuyaDeviceMonitor()
+        tuya_mon.execute(client)
 
+    def run_scanner():
+        client=RestApiClient(root_url=CONFIG['default']['restapi']['url'])
+        client.login(CONFIG['default']['restapi']['user'],CONFIG['default']['restapi']['password'])
 
-    print("run")
-    t = Thread(target=run_job)
-    t.setDaemon(True)
-    t.start()
-    print("running")
+        tuya_scan=TuyaDeviceScanner()
+        tuya_scan.execute(client)
+
+    print("starting the main threads")
+    t_mon = Thread(target=run_monitor)
+    t_mon.setDaemon(True)
+    t_mon.start()
+
+    t_scan = Thread(target=run_scanner)
+    t_scan.setDaemon(True)
+    t_scan.start()
+    print("main threads running")
 
 
 if __name__ == '__main__':

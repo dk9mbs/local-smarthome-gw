@@ -13,16 +13,10 @@ app = Flask(__name__)
 logger=create_logger(__name__)
 
 class TuyaDeviceMonitor:
-
     def __init__(self):
         self._threads=[]
 
     def execute(self, client):
-
-        logger.warning("scanning devices ...")
-        scan_main()
-        logger.warning("devices scanned")
-
         logger.warning("starting threads")
         devices=client.read_multible("iot_device",{"vendor_id": "tuya"}, json_out=True, none_if_eof=False)
 
