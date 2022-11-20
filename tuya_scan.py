@@ -8,7 +8,7 @@ from config import CONFIG
 from core.appinfo import AppInfo
 
 def main():
-    client=create_client()
+    client=AppInfo.create_restapi_client()
 
     devices_file='devices.json'
     devices_json=[]
@@ -102,11 +102,6 @@ def get_device(devices, device_id):
             return device
 
     return None
-
-def create_client():
-    client=RestApiClient(root_url=CONFIG['default']['restapi']['url'])
-    client.login(CONFIG['default']['restapi']['user'],CONFIG['default']['restapi']['password'])
-    return client
 
 def logoff_client(client):
     client.logoff()

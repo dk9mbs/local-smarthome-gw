@@ -1,13 +1,8 @@
-#!/usr/bin/python3
 from flask import Flask, abort
 import tinytuya
 from threading import Thread
 import time
-
-#from clientlib import RestApiClient
-#from config import CONFIG
 from core.log import create_logger
-#from core.device_tools import set_device_attribute_value
 from tuya_scan import main as scan_main
 
 app = Flask(__name__)
