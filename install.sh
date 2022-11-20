@@ -28,7 +28,7 @@ Description=iot local site gw service
 [Service]
 WorkingDirectory=$BASEDIR
 #ExecStartPre=$VENV/bin/python smarthome-gw.py
-ExecStart=$VENV/bin/python smarthome-gw.py
+ExecStart=$VENV/bin/python iot_local_gw.py
 
 # Requires systemd version 211 or newer
 Restart=always

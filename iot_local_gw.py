@@ -4,8 +4,12 @@ import tinytuya
 from clientlib import RestApiClient
 from config import CONFIG
 from core.log import create_logger
+from core.appinfo import AppInfo
 
-app = Flask(__name__)
+
+AppInfo.init(__name__, CONFIG['default'])
+app = AppInfo.get_app()
+
 
 tinytuya.set_debug(False)
 
@@ -85,8 +89,7 @@ def __get_device_attribute_key(client, attribute, class_id):
     return rs[0]['device_attribute_key']
 
 def __create_client():
-    client=RestApiClient(root_url=CONFIG['default']['restapi']['url'])
-    client.login(CONFIG['default']['restapi']['user'],CONFIG['default']['restapi']['password'])
+    client=AppInfo.create_restapi_client()
     return client
 
 def __logoff_client(client):
@@ -100,15 +103,13 @@ def start_monitor():
     from plugins.tuya_device_scanner import TuyaDeviceScanner
 
     def run_monitor():
-        client=RestApiClient(root_url=CONFIG['default']['restapi']['url'])
-        client.login(CONFIG['default']['restapi']['user'],CONFIG['default']['restapi']['password'])
+        client=AppInfo.create_restapi_client()
 
         tuya_mon=TuyaDeviceMonitor()
         tuya_mon.execute(client)
 
     def run_scanner():
-        client=RestApiClient(root_url=CONFIG['default']['restapi']['url'])
-        client.login(CONFIG['default']['restapi']['user'],CONFIG['default']['restapi']['password'])
+        client=AppInfo.create_restapi_client()
 
         tuya_scan=TuyaDeviceScanner()
         tuya_scan.execute(client)
@@ -125,5 +126,5 @@ def start_monitor():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5001)
+    app.run(debug=True, host=AppInfo.get_server_host(), port=AppInfo.get_server_port())
 
