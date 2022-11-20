@@ -10,9 +10,7 @@ from core.appinfo import AppInfo
 AppInfo.init(__name__, CONFIG['default'])
 app = AppInfo.get_app()
 
-
 tinytuya.set_debug(False)
-
 logger=create_logger(__name__)
 
 class DeviceRoutingNotFound(Exception):
@@ -49,7 +47,7 @@ def send_command(external_device_id, attribute, value):
             key_value=False
             if value=='on':
                 key_value=True
-            print(device_attribute_key)
+
             d.set_value(device_attribute_key,key_value)
 
         else:

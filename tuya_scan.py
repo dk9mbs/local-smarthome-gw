@@ -5,6 +5,7 @@ from datetime import datetime
 import tinytuya
 from clientlib import RestApiClient
 from config import CONFIG
+from core.appinfo import AppInfo
 
 def main():
     client=create_client()
@@ -49,6 +50,7 @@ def main():
                 "vendor_id": "tuya",
                 "status_id": "new",
                 "last_scan_on": datetime.now(),
+                "location_id": AppInfo.get_location_id(),
             }
 
             if device_json!=None:
@@ -67,6 +69,7 @@ def main():
                 "address": devices[key]['ip'],
                 "version": devices[key]['ver'],
                 "last_scan_on": datetime.now(),
+                "location_id": AppInfo.get_location_id(),
             }
 
             if device_json!=None:

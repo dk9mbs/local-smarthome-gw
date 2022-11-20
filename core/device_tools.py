@@ -1,4 +1,5 @@
 from core.log import create_logger
+from core.appinfo import AppInfo
 
 logger=create_logger(__name__)
 

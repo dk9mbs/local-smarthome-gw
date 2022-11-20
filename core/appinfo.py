@@ -75,7 +75,7 @@ class AppInfo:
         return cls._app.config['RESTAPI_URL']
 
     @classmethod
-    def get_location(cls):
+    def get_location_id(cls):
         return cls._app.config['LOCATION']
 
     @classmethod
