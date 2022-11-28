@@ -39,7 +39,7 @@ class TuyaDeviceMonitor:
         while(True):
             data = device.receive()
             if data != None:
-                print(f"Data from device:{data}")
+                logger.warning(f"Data from device {device_id}=>{data}")
                 if 'dps' in data:
                     for key, value in data['dps'].items():
                         set_device_attribute_value(client, device_id, device_class_id, key, value)
