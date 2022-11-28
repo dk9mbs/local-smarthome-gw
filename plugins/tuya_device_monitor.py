@@ -39,10 +39,10 @@ class TuyaDeviceMonitor:
         while(True):
             data = device.receive()
             if data != None:
+                print(f"Data from device:{data}")
                 if 'dps' in data:
                     for key, value in data['dps'].items():
                         set_device_attribute_value(client, device_id, device_class_id, key, value)
-
 
             payload = device.generate_payload(tinytuya.HEART_BEAT)
             device.send(payload)
