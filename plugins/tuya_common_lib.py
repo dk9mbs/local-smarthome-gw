@@ -13,7 +13,7 @@ class TuyaDevice():
     def create(self):
         if self.__class_id.upper()=='BULB':
             d = tinytuya.BulbDevice(self.__id, self.__address, self.__local_key, self.__dev_type)
-        elif class_id.upper()=='OUTLET':
+        elif self.__class_id.upper()=='OUTLET':
             d = tinytuya.OutletDevice(self.__id, self.__address, self.__local_key, self.__dev_type)
         else:
             raise TuyaDeviceClassNotImplemented(f"TUYA class_id not implemented: {class_id}")
