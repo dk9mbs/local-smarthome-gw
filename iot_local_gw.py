@@ -17,11 +17,11 @@ logger=create_logger(__name__)
 @app.route("/<session_id>/<internal_device_id>/<attribute>/<value>", methods=['POST','GET'])
 def send_command(session_id, internal_device_id, attribute, value):
     try:
-        logger.warning("Start request ...")
+        logger.warning(f"Start request ... {internal_device_id} {attribute} {value}")
         client=__create_client()
         logger.warning("After create client")
 
-        rs=__retrive_device(client, internal_device_id)
+        rs=_retrive_device(client, internal_device_id)
         device_attribute_key, device_attribute_value=__get_device_attribute(client, attribute, rs['class_id'], value)
         logger.warning("After retrive data")
 
@@ -46,7 +46,7 @@ def send_command(session_id, internal_device_id, attribute, value):
         abort(500,f"{err}")
 
 
-def __retrive_device(client, device_alias):
+def _retrive_device(client, device_alias):
     rs=client.read_multible("iot_device_routing", {"internal_device_id": f"{device_alias}" }, json_out=True, none_if_eof=True)
     if rs == None:
         raise DeviceRoutingNotFound(f"{device_alias}")
@@ -112,4 +112,3 @@ def start_monitor():
 
 if __name__ == '__main__':
     app.run(debug=True, host=AppInfo.get_server_host(), port=AppInfo.get_server_port())
-
