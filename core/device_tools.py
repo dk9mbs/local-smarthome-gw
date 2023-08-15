@@ -25,7 +25,6 @@ def mqtt_pub(internal_device_id,external_device_id, channel, value):
     client.publish(topic, payload, retain=True)
     client.disconnect()
 
-
 def set_device_attribute_value(client, device_id,device_class_id, key, value):
 
     rs=client.read_multible("iot_device_attribute",{"device_attribute_key":key, "vendor_id":"tuya", "class_id": device_class_id},

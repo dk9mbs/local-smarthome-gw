@@ -22,7 +22,7 @@ def send_command(session_id, internal_device_id, attribute, value):
         logger.warning("After create client")
 
         rs=_retrive_device(client, internal_device_id)
-        device_attribute_key, device_attribute_value=__get_device_attribute(client, attribute, rs['class_id'], value)
+        device_attribute_key, device_attribute_value=_get_device_attribute(client, attribute, rs['class_id'], value)
         logger.warning("After retrive data")
 
         if rs!=None and (rs['vendor_id']).upper()=='TUYA':
@@ -59,7 +59,7 @@ def _retrive_device(client, device_alias):
     return rs[0]
 
 
-def __get_device_attribute(client, attribute, class_id, value):
+def _get_device_attribute(client, attribute, class_id, value):
     rs=client.read_multible("iot_device_attribute",{"name":f"{attribute}", "class_id": f"{class_id}"}, json_out=True, none_if_eof=True)
 
     if rs==None:
