@@ -5,3 +5,5 @@ tinytuya.json
 tuya-raw.json
 devices.json
 __pycache__
+venv
+

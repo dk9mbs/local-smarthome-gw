@@ -6,7 +6,8 @@ BASEDIR=$(dirname $BASEDIR)
 #PLUGINPATH=$BASEDIR/plugins
 #FORMATTERPATH=$BASEDIR/formatter
 #VENV=$BASEDIR/venv/restapi
-VENV=/tmp/venv/gw
+#VENV=/tmp/venv/gw
+VENV=$BASEDIR/venv/gw
 
 mkdir -p "$VENV"
 
