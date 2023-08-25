@@ -3,6 +3,6 @@ CONFIG={
         "restapi":{"user":"user","password":"password","url":"http://localhost:5000/api"},
         "server": {"port":5001, "host":"127.0.0.1"},
         "location": {"id":"1"},
-        "mqtt": {"username":"username", "password":"password", "host":"example.com", "port":"1883"},
+        "mqtt": {"username":"username", "password":"password", "host":"example.com", "port":"1883", "topic":"/restapi/iot/tuya_gw/default"},
     }
 }
