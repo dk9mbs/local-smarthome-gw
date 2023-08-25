@@ -172,6 +172,13 @@ def start_monitor():
 
 
 if __name__ == '__main__':
+    import time
+
     start_mqtt()
+    time.sleep(1)
     start_monitor()
-    app.run(debug=True, host=AppInfo.get_server_host(), port=AppInfo.get_server_port())
+
+    while True:
+        time.sleep(2)
+
+    #app.run(debug=True, host=AppInfo.get_server_host(), port=AppInfo.get_server_port())
