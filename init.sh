@@ -7,7 +7,7 @@ BASEDIR=$(dirname $BASEDIR)
 #FORMATTERPATH=$BASEDIR/formatter
 #VENV=$BASEDIR/venv/restapi
 #VENV=/tmp/venv/gw
-VENV=$BASEDIR/venv/gw
+VENV=$HOME/venv/gw
 
 mkdir -p "$VENV"
 
