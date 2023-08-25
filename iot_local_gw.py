@@ -63,6 +63,7 @@ def start_mqtt():
     username=AppInfo.get_current_config("mqtt", "username","")
     password=AppInfo.get_current_config("mqtt", "password", "")
     host=AppInfo.get_current_config("mqtt", "host", "example.com")
+
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
@@ -70,38 +71,39 @@ def start_mqtt():
     client.connect(host, 1883, 60)
     #client.loop_forever()
     client.loop_start()
+    return client
 
 
-@app.route("/<session_id>/<internal_device_id>/<attribute>/<value>", methods=['POST','GET'])
-def send_command(session_id, internal_device_id, attribute, value):
-    try:
-        logger.warning(f"Start request ... {internal_device_id} {attribute} {value}")
-        client=_create_client()
-        logger.warning("After create client")
+#@app.route("/<session_id>/<internal_device_id>/<attribute>/<value>", methods=['POST','GET'])
+#def send_command(session_id, internal_device_id, attribute, value):
+#    try:
+#        logger.warning(f"Start request ... {internal_device_id} {attribute} {value}")
+#        client=_create_client()
+#        logger.warning("After create client")
 
-        rs=_retrive_device(client, internal_device_id)
-        device_attribute_key, device_attribute_value=_get_device_attribute(client, attribute, rs['class_id'], value)
-        logger.warning("After retrive data")
+#        rs=_retrive_device(client, internal_device_id)
+#        device_attribute_key, device_attribute_value=_get_device_attribute(client, attribute, rs['class_id'], value)
+#        logger.warning("After retrive data")
 
-        if rs!=None and (rs['vendor_id']).upper()=='TUYA':
-            d=TuyaDevice(rs['class_id'], rs['id'], rs['address'], rs['local_key'], 'default')
-            d.create()
-            d.set_version(float(rs['version']))
-            d.set_value(device_attribute_key, device_attribute_value)
+#        if rs!=None and (rs['vendor_id']).upper()=='TUYA':
+#            d=TuyaDevice(rs['class_id'], rs['id'], rs['address'], rs['local_key'], 'default')
+#            d.create()
+#            d.set_version(float(rs['version']))
+#            d.set_value(device_attribute_key, device_attribute_value)
 
-        else:
-            print("No device found")
+#        else:
+#            print("No device found")
 
-        _logoff_client(client)
+#        _logoff_client(client)
 
-        return Response(status=200)
+#        return Response(status=200)
 
-    except (DeviceRoutingNotFound,DeviceNotFound,DeviceAttributeKeyNotFound,TuyaDeviceClassNotImplemented) as err:
-        logger.exception(f"{err}")
-        abort(404,f"{err}")
-    except Exception as err:
-        logger.exception(f"{err}")
-        abort(500,f"{err}")
+#    except (DeviceRoutingNotFound,DeviceNotFound,DeviceAttributeKeyNotFound,TuyaDeviceClassNotImplemented) as err:
+#        logger.exception(f"{err}")
+#        abort(404,f"{err}")
+#    except Exception as err:
+#        logger.exception(f"{err}")
+#        abort(500,f"{err}")
 
 
 def _retrive_device(client, device_alias):
@@ -139,7 +141,7 @@ def _logoff_client(client):
     client.logoff()
 
 
-@app.before_first_request
+#@app.before_first_request
 def start_monitor():
     from time import sleep
     from threading import Thread
@@ -174,11 +176,14 @@ def start_monitor():
 if __name__ == '__main__':
     import time
 
-    start_mqtt()
+    client = start_mqtt()
     time.sleep(1)
     start_monitor()
 
-    while True:
-        time.sleep(2)
-
+    try:
+        while True:
+            time.sleep(2)
+    except KeyboardInterrupt as err:
+        client.loop_stop()
+        logger.error("Bye bye")
     #app.run(debug=True, host=AppInfo.get_server_host(), port=AppInfo.get_server_port())
